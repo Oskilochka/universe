@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, Table } from "antd";
+import { Empty, Spin, Table } from "antd";
 import {
   DesktopOutlined,
   FileOutlined,
@@ -70,10 +70,22 @@ const columns: ColumnsType<Student> = [
 
 function App() {
   const [ students, setStudents ] = React.useState<Student[]>([]);
+  const [ isFetching, setIsFetching ] = React.useState(false);
+
+  const fetchStudents = () => {
+    try {
+      setIsFetching(true);
+      getAllStudents()
+        .then(setStudents);
+    } catch (e) {
+      console.log(e);
+    } finally {
+      setIsFetching(false);
+    }
+  };
 
   React.useEffect(() => {
-    getAllStudents()
-      .then(setStudents);
+    fetchStudents();
   }, []);
 
   const [ collapsed, setCollapsed ] = React.useState(false);
@@ -83,10 +95,21 @@ function App() {
 
 
   const renderStudents = () => {
+    if (isFetching) {
+      return <Spin />;
+    }
     if (students.length === 0) {
-      return "No data";
+      return <Empty />;
     } else {
-      return <Table<Student> rowKey={record => record.id} columns={columns} dataSource={students} />;
+      return <Table
+        bordered={true}
+        title={() => "Students"}
+        rowKey={record => record.id}
+        columns={columns}
+        dataSource={students}
+        pagination={{ pageSize: 20 }}
+        scroll={{ y: 240 }}
+      />;
     }
   };
 
@@ -102,12 +125,11 @@ function App() {
           <Breadcrumb style={{ margin: "16px 0" }} items={[ { path: "/", title: "User" }, { path: "/", title: "Bill" } ]} />
           <div style={{ padding: 24, minHeight: 360, background: colorBgContainer }}>
             <div className="App">
-              <Button type={"primary"}>Universe</Button>
               {renderStudents()}
             </div>
           </div>
         </Content>
-        <Footer style={{ textAlign: "center" }}>Ant Design ©2023 Created by Ant UED</Footer>
+        <Footer style={{ textAlign: "center" }}>©2023 Created by Oskilochka</Footer>
       </Layout>
     </Layout>
   );
